@@ -77,13 +77,25 @@ local data = {
   { { "-x" } };
   { { "-o" } };
   { { "--output" } };
+  {
+    { "-O0" };
+    { { char = "O", arg = 0 } };
+    2;
+  };
+  {
+    { "-O", "1" };
+    { { char = "O", arg = 1 } };
+    3;
+  };
+  { { "-Os" } };
 }
 
 for i = 1, #data do
   local opts = options()
   opts:add_options {
     { char = "h"; name = "help" };
-    { char = "o"; name = "output"; has_arg = true };
+    { char = "o"; name = "output"; arg = true };
+    { char = "O"; arg = tonumber };
     { char = "v"; name = "verbose" };
     { char = "V"; name = "version" };
   }

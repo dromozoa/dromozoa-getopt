@@ -15,6 +15,10 @@
 -- You should have received a copy of the GNU General Public License
 -- along with dromozoa-getopt.  If not, see <http://www.gnu.org/licenses/>.
 
+local function identity(v)
+  return v
+end
+
 return function ()
   local self = {
     _missing = "?";
@@ -23,11 +27,14 @@ return function ()
     _options_name = {};
   }
 
-  function self:add_option(char, name, has_arg)
+  function self:add_option(char, name, arg)
+    if arg == true then
+      arg = identity
+    end
     local option = {
       char = char;
       name = name;
-      has_arg = has_arg;
+      arg = arg;
     }
     local options = self._options
     options[#options + 1] = option
@@ -70,7 +77,7 @@ return function ()
   function self:add_options(options)
     for i = 1, #options do
       local v = options[i]
-      self:add_option(v.char, v.name, v.has_arg)
+      self:add_option(v.char, v.name, v.arg)
     end
   end
 
@@ -81,7 +88,11 @@ return function ()
       if option == nil then
         return nil
       else
-        if option.has_arg then
+        if option.arg then
+          local b = option.arg(b)
+          if b == nil then
+            return nil
+          end
           result[#result + 1] = { option = option; arg = b }
           return 1
         else
@@ -95,11 +106,12 @@ return function ()
         if option == nil then
           return nil
         end
-        if option.has_arg then
-          if v == nil then
+        if option.arg then
+          local b = option.arg(v)
+          if b == nil then
             return nil
           end
-          result[#result + 1] = { option = option; arg = v }
+          result[#result + 1] = { option = option; arg = b }
           return 2
         else
           result[#result + 1] = { option = option }
@@ -119,15 +131,20 @@ return function ()
         if option == nil then
           return nil
         else
-          if option.has_arg then
+          if option.arg then
             if i < #u then
-              result[#result + 1] = { option = option; arg = u:sub(i + 1) }
-              return 1
-            else
-              if v == nil then
+              local b = option.arg(u:sub(i + 1))
+              if b == nil then
                 return nil
               end
-              result[#result + 1] = { option = option; arg = v }
+              result[#result + 1] = { option = option; arg = b }
+              return 1
+            else
+              local b = option.arg(v)
+              if b == nil then
+                return nil
+              end
+              result[#result + 1] = { option = option; arg = b }
               return 2
             end
           else
