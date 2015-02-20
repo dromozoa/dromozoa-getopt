@@ -16,6 +16,7 @@
 -- along with dromozoa-getopt.  If not, see <http://www.gnu.org/licenses/>.
 
 local json = require "dromozoa.json.pure"
+local pointer = require "dromozoa.json.pointer"
 local options = require "dromozoa.getopt.options"
 
 local data = {
@@ -114,3 +115,39 @@ for i = 1, #data do
     assert(a == nil)
   end
 end
+
+local opts = options()
+opts:add_options {
+  { char = "f" };
+  { name = "foo" };
+  { name = "foo-bar-baz" };
+  { char = "b"; name = "bar" };
+  { char = "w"; name = "width"; arg = tonumber };
+  { char = "h"; name = "height"; arg = tonumber };
+  { char = "d"; name = "default"; arg = true };
+}
+local a, b = opts:parse {
+  "-f", "-f", "-f",
+  "--foo", "--foo",
+  "--foo-bar-baz",
+  "-b", "--bar",
+  "-w", "17", "-w", "23",
+  "-h", "37", "-h", "42",
+}
+assert(a)
+local a = opts:merge(a, {
+  foo = 0;
+  foo_bar_baz = 0;
+  bar = 0;
+  width = {};
+  default = "default";
+})
+assert(pointer(""):test({ a }, {
+  f = true;
+  foo = 2;
+  foo_bar_baz = 1;
+  bar = 2;
+  width = { 17, 23 };
+  height = 42;
+  default = "default";
+}))

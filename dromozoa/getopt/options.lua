@@ -19,6 +19,23 @@ local function identity(v)
   return v
 end
 
+local function merge(key, arg, target)
+  if arg == nil then
+    if type(target[key]) == "number" then
+      target[key] = target[key] + 1
+    else
+      target[key] = true
+    end
+  else
+    if type(target[key]) == "table" then
+      local v = target[key]
+      v[#v + 1] = arg
+    else
+      target[key]= arg
+    end
+  end
+end
+
 return function ()
   local self = {
     _missing = "?";
@@ -190,6 +207,21 @@ return function ()
       end
     end
     return result, i
+  end
+
+  function self:merge(result, target)
+    if target == nil then
+      target = {}
+    end
+    for i = 1, #result do
+      local v = result[i]
+      if v.option.name ~= nil then
+        merge(v.option.name:gsub("%-", "_"), v.arg, target)
+      elseif v.option.char ~= nil then
+        merge(v.option.char, v.arg, target)
+      end
+    end
+    return target
   end
 
   return self
