@@ -23,8 +23,8 @@ return function ()
   local self = {
     _missing = "?";
     _options = {};
-    _options_char = {};
-    _options_name = {};
+    _option_by_char = {};
+    _option_by_name = {};
   }
 
   function self:add_option(char, name, arg)
@@ -39,10 +39,10 @@ return function ()
     local options = self._options
     options[#options + 1] = option
     if char ~= nil then
-      self._options_char[char] = option
+      self._option_by_char[char] = option
     end
     if name ~= nil then
-      self._options_name[name] = option
+      self._option_by_name[name] = option
     end
   end
 
@@ -84,7 +84,7 @@ return function ()
   function self:parse_name(u, v, result)
     local a, b = u:match("^%-%-([^=]+)=(.*)$")
     if a ~= nil then
-      local option = self._options_name[a]
+      local option = self._option_by_name[a]
       if option == nil then
         return nil
       else
@@ -102,7 +102,7 @@ return function ()
     else
       local a = u:match("^%-%-([^=]+)$")
       if a ~= nil then
-        local option = self._options_name[a]
+        local option = self._option_by_name[a]
         if option == nil then
           return nil
         end
@@ -127,7 +127,7 @@ return function ()
       local i = 2
       while i <= #u do
         local a = u:sub(i, i)
-        local option = self._options_char[a]
+        local option = self._option_by_char[a]
         if option == nil then
           return nil
         else
@@ -166,7 +166,6 @@ return function ()
     if j == nil then
       j = #arg
     end
-
     local result = {}
     while i <= j do
       local u, v = arg[i], arg[i + 1]
